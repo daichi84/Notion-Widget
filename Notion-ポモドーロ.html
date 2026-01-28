@@ -3,163 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notion Pomodoro Timer</title>
+    <title>ポモドーロタイマー</title>
     <style>
-        :root {
-            --bg-color: transparent;
-            --text-color: #37352f;
-            --button-bg: #efefef;
-            --button-hover: #e2e2e2;
-            --accent: #eb5757; /* NotionのRedに近い色 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
-
-        .timer-container {
-            text-align: center;
+            min-height: 100vh;
             padding: 20px;
+        }
+        
+        .container {
+            background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-radius: 30px;
+            padding: 60px 50px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            text-align: center;
+            max-width: 450px;
             width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        .time-display {
-            font-size: 4rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .controls, .settings {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        button {
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 40px;
+            font-size: 18px;
             font-weight: 500;
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background-color: var(--button-hover);
-        }
-
-        button#start {
-            background-color: var(--text-color);
-            color: white;
-        }
-
-        button#start:hover {
-            opacity: 0.8;
-        }
-
-        .settings-label {
-            font-size: 0.8rem;
-            margin-top: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
             opacity: 0.6;
+        }
+        
+        .time-selector {
+            margin-bottom: 50px;
+        }
+        
+        .time-selector select {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='white' stroke-opacity='0.5' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            padding-right: 50px;
+        }
+        
+        .time-selector select:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .time-selector select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .time-selector select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .timer-circle {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 50px;
+        }
+        
+        .circle-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .circle-progress {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: conic-gradient(
+                from 0deg,
+                #6366f1 0deg,
+                #6366f1 var(--progress, 360deg),
+                transparent var(--progress, 360deg)
+            );
+            mask: radial-gradient(closest-side, transparent 85%, black 85%);
+            -webkit-mask: radial-gradient(closest-side, transparent 85%, black 85%);
+            transition: --progress 0.3s linear;
+        }
+        
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 64px;
+            font-weight: 300;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        
+        .timer-display.running {
+            color: #6366f1;
+        }
+        
+        .timer-display.finished {
+            color: #10b981;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 18px 32px;
+            font-size: 15px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            max-width: 130px;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        button:hover::before {
+            transform: translateX(100%);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+        
+        .start-btn:hover {
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+        
+        .stop-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stop-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .reset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .status {
+            margin-top: 30px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            min-height: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .status.finished {
+            color: #10b981;
+            font-weight: 500;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); }
+        }
+        
+        .timer-circle.running {
+            animation: glow 2s infinite;
+            border-radius: 50%;
         }
     </style>
 </head>
 <body>
-
-<div class="timer-container">
-    <div class="time-display" id="display">25:00</div>
-    
-    <div class="controls">
-        <button id="start">Start</button>
-        <button id="stop">Stop</button>
-        <button id="reset">Reset</button>
+    <div class="container">
+        <h1>Pomodoro</h1>
+        
+        <div class="time-selector">
+            <select id="timeSelect">
+                <option value="5">5分</option>
+                <option value="10">10分</option>
+                <option value="15">15分</option>
+                <option value="20">20分</option>
+                <option value="25" selected>25分</option>
+                <option value="30">30分</option>
+                <option value="35">35分</option>
+                <option value="40">40分</option>
+                <option value="45">45分</option>
+                <option value="50">50分</option>
+                <option value="55">55分</option>
+                <option value="60">60分</option>
+            </select>
+        </div>
+        
+        <div id="timerCircle" class="timer-circle">
+            <div class="circle-bg"></div>
+            <div id="circleProgress" class="circle-progress" style="--progress: 360deg"></div>
+            <div id="timerDisplay" class="timer-display">25:00</div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn" class="start-btn">開始</button>
+            <button id="stopBtn" class="stop-btn">停止</button>
+            <button id="resetBtn" class="reset-btn">リセット</button>
+        </div>
+        
+        <div id="status" class="status"></div>
     </div>
 
-    <div class="settings-label">Set Time (5min steps)</div>
-    <div class="settings">
-        <button id="minus">- 5m</button>
-        <button id="plus">+ 5m</button>
-    </div>
-</div>
+    <script>
+        let totalSeconds = 25 * 60;
+        let remainingSeconds = totalSeconds;
+        let timerInterval = null;
+        let isRunning = false;
 
-<script>
-    let timeLeft = 1500; // 25 minutes in seconds
-    let timerId = null;
-    let isRunning = false;
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerCircle = document.getElementById('timerCircle');
+        const circleProgress = document.getElementById('circleProgress');
+        const timeSelect = document.getElementById('timeSelect');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const status = document.getElementById('status');
 
-    const display = document.getElementById('display');
-    const startBtn = document.getElementById('start');
-    const stopBtn = document.getElementById('stop');
-    const resetBtn = document.getElementById('reset');
-    const plusBtn = document.getElementById('plus');
-    const minusBtn = document.getElementById('minus');
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
 
-    function updateDisplay() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+        function updateProgress() {
+            const progress = (remainingSeconds / totalSeconds) * 360;
+            circleProgress.style.setProperty('--progress', `${progress}deg`);
+        }
 
-    function startTimer() {
-        if (isRunning) return;
-        isRunning = true;
-        timerId = setInterval(() => {
-            if (timeLeft > 0) {
-                timeLeft--;
-                updateDisplay();
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(remainingSeconds);
+            updateProgress();
+            
+            if (remainingSeconds === 0 && isRunning) {
+                timerDisplay.classList.add('finished');
+                timerDisplay.classList.remove('running');
+                timerCircle.classList.remove('running');
+                status.textContent = '完了';
+                status.classList.add('finished');
+                stopTimer();
+            } else if (isRunning) {
+                timerDisplay.classList.add('running');
+                timerDisplay.classList.remove('finished');
+                timerCircle.classList.add('running');
             } else {
-                clearInterval(timerId);
-                isRunning = false;
+                timerDisplay.classList.remove('running', 'finished');
+                timerCircle.classList.remove('running');
             }
-        }, 1000);
-    }
+        }
 
-    function stopTimer() {
-        clearInterval(timerId);
-        isRunning = false;
-    }
-
-    function resetTimer() {
-        stopTimer();
-        // ここで指定された時間に戻す（デフォルト25分または現在の設定）
-        updateDisplay();
-    }
-
-    plusBtn.addEventListener('click', () => {
-        timeLeft += 300;
-        updateDisplay();
-    });
-
-    minusBtn.addEventListener('click', () => {
-        if (timeLeft > 300) {
-            timeLeft -= 300;
+        function startTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            status.textContent = '実行中';
+            status.classList.remove('finished');
+            timeSelect.disabled = true;
+            
+            timerInterval = setInterval(() => {
+                if (remainingSeconds > 0) {
+                    remainingSeconds--;
+                    updateDisplay();
+                } else {
+                    stopTimer();
+                }
+            }, 1000);
+            
             updateDisplay();
         }
-    });
 
-    startBtn.addEventListener('click', startTimer);
-    stopBtn.addEventListener('click', stopTimer);
-    resetBtn.addEventListener('click', () => {
-        // リセット時は直前の開始時間ではなく、初期値(25分)に戻す例
-        // もし「現在の設定」を維持したい場合は変数を追加してください
-        timeLeft = 1500; 
+        function stopTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timeSelect.disabled = false;
+            
+            if (remainingSeconds > 0) {
+                status.textContent = '一時停止';
+                status.classList.remove('finished');
+            }
+            
+            updateDisplay();
+        }
+
+        function resetTimer() {
+            stopTimer();
+            totalSeconds = parseInt(timeSelect.value) * 60;
+            remainingSeconds = totalSeconds;
+            status.textContent = '';
+            status.classList.remove('finished');
+            updateDisplay();
+        }
+
+        timeSelect.addEventListener('change', () => {
+            if (!isRunning) {
+                resetTimer();
+            }
+        });
+
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
         updateDisplay();
-    });
-
-    updateDisplay();
-</script>
-
+    </script>
 </body>
 </html>
