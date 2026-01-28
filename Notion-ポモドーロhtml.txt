@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Pomodoro Timer</title>
+    <style>
+        :root {
+            --bg-color: transparent;
+            --text-color: #37352f;
+            --button-bg: #efefef;
+            --button-hover: #e2e2e2;
+            --accent: #eb5757; /* NotionのRedに近い色 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .timer-container {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .time-display {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .controls, .settings {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+        }
+
+        button#start {
+            background-color: var(--text-color);
+            color: white;
+        }
+
+        button#start:hover {
+            opacity: 0.8;
+        }
+
+        .settings-label {
+            font-size: 0.8rem;
+            margin-top: 20px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="timer-container">
+    <div class="time-display" id="display">25:00</div>
+    
+    <div class="controls">
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <button id="reset">Reset</button>
+    </div>
+
+    <div class="settings-label">Set Time (5min steps)</div>
+    <div class="settings">
+        <button id="minus">- 5m</button>
+        <button id="plus">+ 5m</button>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 1500; // 25 minutes in seconds
+    let timerId = null;
+    let isRunning = false;
+
+    const display = document.getElementById('display');
+    const startBtn = document.getElementById('start');
+    const stopBtn = document.getElementById('stop');
+    const resetBtn = document.getElementById('reset');
+    const plusBtn = document.getElementById('plus');
+    const minusBtn = document.getElementById('minus');
+
+    function updateDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        if (isRunning) return;
+        isRunning = true;
+        timerId = setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                clearInterval(timerId);
+                isRunning = false;
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerId);
+        isRunning = false;
+    }
+
+    function resetTimer() {
+        stopTimer();
+        // ここで指定された時間に戻す（デフォルト25分または現在の設定）
+        updateDisplay();
+    }
+
+    plusBtn.addEventListener('click', () => {
+        timeLeft += 300;
+        updateDisplay();
+    });
+
+    minusBtn.addEventListener('click', () => {
+        if (timeLeft > 300) {
+            timeLeft -= 300;
+            updateDisplay();
+        }
+    });
+
+    startBtn.addEventListener('click', startTimer);
+    stopBtn.addEventListener('click', stopTimer);
+    resetBtn.addEventListener('click', () => {
+        // リセット時は直前の開始時間ではなく、初期値(25分)に戻す例
+        // もし「現在の設定」を維持したい場合は変数を追加してください
+        timeLeft = 1500; 
+        updateDisplay();
+    });
+
+    updateDisplay();
+</script>
+
+</body>
+</html>
